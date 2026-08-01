@@ -1,0 +1,31 @@
+{
+  "name": "ai-file-detector",
+  "version": "1.0.0",
+  "description": "Keep local AI-agent artifacts out of Git history.",
+  "type": "module",
+  "bin": {
+    "ai-file-detector": "dist/ai-file-detector.js"
+  },
+  "files": [
+    "dist/ai-file-detector.js",
+    "action.yml",
+    "skills/ai-file-detector/SKILL.md",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "typecheck": "tsc --noEmit",
+    "test": "npm run build && node --test tests/*.test.mjs",
+    "check:size": "node scripts/check-size.mjs",
+    "check": "npm run typecheck && npm test && npm run check:size"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "esbuild": "^0.25.0",
+    "typescript": "^5.9.0"
+  },
+  "license": "MIT"
+}

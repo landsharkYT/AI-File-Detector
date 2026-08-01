@@ -1,0 +1,34 @@
+name: AIFileDetector
+description: Keep local AI-agent artifacts out of Git history.
+author: landsharkYT
+
+inputs:
+  working-directory:
+    description: A path inside the Git repository to scan.
+    required: false
+    default: "."
+
+outputs:
+  result:
+    description: compliant, violations, or error
+    value: ${{ steps.check.outputs.result }}
+  violation-count:
+    description: Number of policy violations
+    value: ${{ steps.check.outputs.violation-count }}
+  report-path:
+    description: Path to the complete JSON report
+    value: ${{ steps.check.outputs.report-path }}
+
+runs:
+  using: composite
+  steps:
+    - id: check
+      shell: bash
+      env:
+        AIFD_ACTION: "1"
+        AIFD_WORKING_DIRECTORY: ${{ inputs.working-directory }}
+      run: node "$GITHUB_ACTION_PATH/dist/ai-file-detector.js" check --root "$AIFD_WORKING_DIRECTORY" --format text
+
+branding:
+  icon: shield
+  color: gray-dark

@@ -1,0 +1,8 @@
+{
+  "version": 1,
+  "exempt": {
+    "paths": [
+      "skills/ai-file-detector/SKILL.md"
+    ]
+  }
+}

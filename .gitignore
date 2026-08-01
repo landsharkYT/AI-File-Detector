@@ -1,0 +1,6 @@
+node_modules/
+.opencode/
+CONTEXT.md
+dist/*.map
+coverage/
+*.log

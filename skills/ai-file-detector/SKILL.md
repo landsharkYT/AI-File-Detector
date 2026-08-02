@@ -13,6 +13,8 @@ description: Installs and runs a repository-local checker for protected AI-agent
 
 The installer is idempotent. It installs this skill and its bundled checker, then ensures `/.agents/` is ignored. It may create or append to the root `.gitignore`, but it refuses tracked `.agents` content, a governing negation rule, non-regular `.gitignore` files, and conflicting existing skill files. Never bypass an installer refusal by overwriting files or changing Git history.
 
+Read the installed [`README.md`](README.md) for the repository-local command reference.
+
 ## Check
 
 Run the repository-local checker:

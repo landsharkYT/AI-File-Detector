@@ -63,6 +63,7 @@ function resources(sourceRoot) {
     : resolve(sourceRoot, "..", "..", "dist", "ai-file-detector.js");
   return [
     { source: join(sourceRoot, "SKILL.md"), target: "SKILL.md" },
+    { source: join(sourceRoot, "README.md"), target: "README.md" },
     { source: join(sourceRoot, "scripts", "install.mjs"), target: "scripts/install.mjs" },
     { source: checker, target: "bin/ai-file-detector.mjs" }
   ];

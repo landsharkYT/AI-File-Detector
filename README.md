@@ -26,7 +26,7 @@ Exit code `0` means compliant, `1` means policy violations, and `2` means invali
 
 ## Reusable agent skill
 
-The bundled skill installs a repository-local copy of itself and the compiled checker under `.agents/skills/ai-file-detector/`. Point an agent at [`skills/ai-file-detector/SKILL.md`](skills/ai-file-detector/SKILL.md) and ask:
+The bundled skill installs a repository-local copy of itself and the compiled checker under `.agents/skills/ai-file-detector/`. The installed `README.md` is an agent-facing command and safety reference. Point an agent at [`skills/ai-file-detector/SKILL.md`](skills/ai-file-detector/SKILL.md) and ask:
 
 ```text
 Use the ai-file-detector skill to check this repository.

@@ -32,6 +32,10 @@ test("the skill installs a repository-local copy and safely appends its ignore r
     readFileSync(join(root, installedSkillPath, "SKILL.md"), "utf8"),
     readFileSync(join(projectRoot, "skills", "ai-file-detector", "SKILL.md"), "utf8")
   );
+  const installedReadme = readFileSync(join(root, installedSkillPath, "README.md"), "utf8");
+  assert.equal(installedReadme, readFileSync(join(projectRoot, "skills", "ai-file-detector", "README.md"), "utf8"));
+  assert.match(installedReadme, /check --root \. --format json/u);
+  assert.match(installedReadme, /only when the user explicitly requests remediation/u);
   assert.equal(
     readFileSync(join(root, installedSkillPath, "bin", "ai-file-detector.mjs"), "utf8"),
     readFileSync(bundledCheckerPath, "utf8")
@@ -74,6 +78,10 @@ test("an installed skill can install itself into another repository", () => {
   assert.equal(
     readFileSync(join(target, installedSkillPath, "bin", "ai-file-detector.mjs"), "utf8"),
     readFileSync(bundledCheckerPath, "utf8")
+  );
+  assert.equal(
+    readFileSync(join(target, installedSkillPath, "README.md"), "utf8"),
+    readFileSync(join(projectRoot, "skills", "ai-file-detector", "README.md"), "utf8")
   );
 });
 

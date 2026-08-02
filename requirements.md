@@ -4,7 +4,7 @@
 
 - Product and repository: `AIFileDetector`
 - CLI command: `ai-file-detector`
-- GitHub Action: `landsharkYT/AIFileDetector@v1`
+- GitHub Action: `landsharkYT/AI-File-Detector@v1`
 - Agent skill: `ai-file-detector`
 - Internal capability: protected-artifact checker
 
@@ -52,7 +52,7 @@ If no `.gitignore` exists, `--fix` may create a root `.gitignore`. The new file 
 V1 ships as a standalone composite GitHub Action, consumable as:
 
 ```yaml
-- uses: landsharkYT/AIFileDetector@v1
+- uses: landsharkYT/AI-File-Detector@v1
 ```
 
 The Action runs the same core checker as the local skill and enforces the same artifact policy against repository or pull-request contents. It is designed to be included later within a larger multi-bot composite Action. A hosted GitHub App is outside V1.

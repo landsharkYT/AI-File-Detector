@@ -44,7 +44,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - uses: landsharkYT/AIFileDetector@v1
+      - uses: landsharkYT/AI-File-Detector@v1
         id: ai-files
 ```
 

@@ -43,6 +43,8 @@ The skill helps an agent comply with the repository's artifact policy before cre
 
 Its default mode is read-only: it reports protected artifacts, whether Git tracks them, whether Git ignores local instances, and the action needed to comply.
 
+The distributed skill is self-contained and reusable across repositories. On first use, it installs a repository-local copy of its instructions, installer, and compiled checker under `.agents/skills/ai-file-detector/`. Installation is idempotent and ensures the installed skill is ignored by Git. It may create or safely append `/.agents/` to the root `.gitignore`, but must refuse tracked `.agents` content, a governing negation, a non-regular `.gitignore`, or conflicting existing skill files. It never overwrites an existing differing skill installation.
+
 An explicit `--fix` mode may append missing ignore entries when doing so is unambiguous. It must not rewrite or remove existing `.gitignore` content, add negation rules, untrack files, or modify Git history. It must refuse automatic repair when an existing negation rule, tracked artifact, or other ambiguity would make an append-only edit unsafe, and report manual instructions instead.
 
 If no `.gitignore` exists, `--fix` may create a root `.gitignore`. The new file contains rules only for protected artifacts that currently exist; it must not prepopulate unused default protections. A read-only scan reports the missing `.gitignore` without creating it.
@@ -312,6 +314,7 @@ V1 is complete only when automated tests demonstrate all of the following:
 | Path safety | Spaces, newlines, Unicode, leading dashes, and symlinks cannot alter command execution or escape the repository. |
 | Output | Text, annotations, summaries, Action outputs, and JSON agree; JSON output is deterministic. |
 | Action | The composite Action scans the full tree, marks pull-request relation, remains read-only, and runs without consumer installation. |
+| Skill installation | A bundled skill installs itself idempotently, remains ignored, preserves `.gitignore`, and refuses tracked, negated, non-regular, or conflicting targets. |
 | Packaging | Distribution contains one zero-dependency compiled JavaScript artifact and no production npm packages. |
 | Size | The compiled JavaScript is at most 100 KiB, excluding source maps. |
 | Performance | A clean 10,000-file Linux fixture scans in under two seconds with peak RSS below 100 MiB. |

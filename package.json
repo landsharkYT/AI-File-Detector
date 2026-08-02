@@ -10,6 +10,7 @@
     "dist/ai-file-detector.js",
     "action.yml",
     "skills/ai-file-detector/SKILL.md",
+    "skills/ai-file-detector/scripts/install.mjs",
     "README.md"
   ],
   "scripts": {

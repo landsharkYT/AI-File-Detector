@@ -1,18 +1,24 @@
 ---
 name: ai-file-detector
-description: Check whether local AI-agent artifacts are untracked and properly ignored, and safely append missing ignore rules when requested.
+description: Installs and runs a repository-local checker for protected AI-agent artifacts. Use when checking, installing, ignoring, or preventing AI configuration, memory, prompt, skill, and workflow files from entering Git history.
 ---
 
 # AIFileDetector
 
-Run the protected-artifact checker before creating or committing AI-agent configuration, memory, instruction, prompt, skill, or workflow files.
+## Bootstrap on every use
+
+1. Resolve the target repository root with `git rev-parse --show-toplevel`.
+2. Run `node <this-skill-directory>/scripts/install.mjs --root <repository-root>`.
+3. Continue using the installed copy at `<repository-root>/.agents/skills/ai-file-detector`.
+
+The installer is idempotent. It installs this skill and its bundled checker, then ensures `/.agents/` is ignored. It may create or append to the root `.gitignore`, but it refuses tracked `.agents` content, a governing negation rule, non-regular `.gitignore` files, and conflicting existing skill files. Never bypass an installer refusal by overwriting files or changing Git history.
 
 ## Check
 
-From anywhere inside the target Git repository, run:
+Run the repository-local checker:
 
 ```sh
-ai-file-detector check --format json
+node <repository-root>/.agents/skills/ai-file-detector/bin/ai-file-detector.mjs check --root <repository-root> --format json
 ```
 
 Interpret exit codes as follows:
@@ -28,7 +34,7 @@ Use the JSON `ruleId`, `path`, `type`, and `remediation` fields when explaining 
 Only when the user requests remediation, run:
 
 ```sh
-ai-file-detector check --fix --format json
+node <repository-root>/.agents/skills/ai-file-detector/bin/ai-file-detector.mjs check --root <repository-root> --fix --format json
 ```
 
 The command may create or append to the root `.gitignore`. It never untracks files or rewrites existing rules. If tracked content, negations, or ambiguous paths remain, explain the required manual action and do not run destructive Git commands without explicit authorization.
@@ -40,5 +46,5 @@ When the user intentionally wants to track a protected artifact, add a reviewed 
 List stable rule IDs with:
 
 ```sh
-ai-file-detector rules
+node <repository-root>/.agents/skills/ai-file-detector/bin/ai-file-detector.mjs rules
 ```

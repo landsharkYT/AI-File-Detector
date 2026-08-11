@@ -1,0 +1,95 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/landsharkYT/AI-File-Detector/schemas/report-v2.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "result", "exitCode", "policy", "summary", "findings", "exemptions", "errors"],
+  "properties": {
+    "schemaVersion": { "const": 2 },
+    "result": { "enum": ["compliant", "violations", "error"] },
+    "exitCode": { "enum": [0, 1, 2] },
+    "policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source", "path", "version"],
+      "properties": {
+        "source": { "enum": ["defaults", "working-tree", "base-branch"] },
+        "path": { "const": ".ai-artifact-policy.json" },
+        "version": { "enum": [1, 2] }
+      }
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["total", "tracked", "unignored", "unprotectedDirectories"],
+      "properties": {
+        "total": { "type": "integer", "minimum": 0 },
+        "tracked": { "type": "integer", "minimum": 0 },
+        "unignored": { "type": "integer", "minimum": 0 },
+        "unprotectedDirectories": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["type", "ruleId", "path", "artifactRoot", "ignored", "ignoreRule", "pullRequestRelation", "remediation"],
+        "properties": {
+          "type": { "enum": ["tracked", "unignored", "unprotected-directory"] },
+          "ruleId": { "type": "string" },
+          "path": { "type": "string" },
+          "artifactRoot": { "type": "string" },
+          "ignored": { "type": "boolean" },
+          "ignoreRule": { "type": ["object", "null"] },
+          "pullRequestRelation": { "enum": ["added", "modified", "pre-existing", "not-applicable", "unknown"] },
+          "remediation": { "enum": ["untrack-and-ignore", "add-ignore", "protect-directory", "manual"] }
+        }
+      }
+    },
+    "exemptions": {
+      "type": "array",
+      "items": {
+        "oneOf": [
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["scope", "ruleId", "reason", "authority", "provenance"],
+            "properties": {
+              "scope": { "const": "rule" },
+              "ruleId": { "type": "string", "minLength": 1 },
+              "reason": { "type": ["string", "null"] },
+              "authority": { "type": ["string", "null"] },
+              "provenance": { "enum": ["legacy-unattributed", "policy-approved"] }
+            }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["scope", "path", "reason", "authority", "provenance"],
+            "properties": {
+              "scope": { "const": "path" },
+              "path": { "type": "string", "minLength": 1 },
+              "reason": { "type": ["string", "null"] },
+              "authority": { "type": ["string", "null"] },
+              "provenance": { "enum": ["legacy-unattributed", "policy-approved"] }
+            }
+          }
+        ]
+      }
+    },
+    "errors": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["code", "message"],
+        "properties": {
+          "code": { "type": "string" },
+          "message": { "type": "string" },
+          "path": { "type": "string" }
+        }
+      }
+    }
+  }
+}

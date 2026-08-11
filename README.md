@@ -78,15 +78,25 @@ Create `.ai-artifact-policy.json` in the repository root:
 
 ```json
 {
-  "version": 1,
+  "version": 2,
   "exempt": {
-    "rules": ["grill.adrs"],
-    "paths": ["AGENTS.md"]
+    "rules": [{
+      "ruleId": "grill.adrs",
+      "reason": "Decision records are intentionally published project documentation.",
+      "authority": "repository-owner:landsharkYT"
+    }],
+    "paths": [{
+      "path": "AGENTS.md",
+      "reason": "This repository intentionally publishes its contributor instructions.",
+      "authority": "repository-owner:landsharkYT"
+    }]
   }
 }
 ```
 
-Rule exemptions apply throughout the repository. Path exemptions apply only to one exact repository-relative path. Run `ai-file-detector rules` to list the complete stable rule set.
+Rule exemptions apply throughout the repository. Path exemptions apply only to one exact repository-relative path; globs are rejected. The authority is a stable, non-secret reviewer identifier, not a cryptographic signature. Run `ai-file-detector rules` to list the complete stable rule set.
+
+Policy schema 1 remains accepted for migration, but its exemptions appear in report schema 2 as `legacy-unattributed`. Schema-2 approvals appear with their reason, authority, exact scope, and `policy-approved` provenance. [`schemas/report-v2.schema.json`](schemas/report-v2.schema.json) is the canonical native report contract.
 
 In pull requests, policy changes do not govern the same pull request. Merge a policy exemption first, then rely on it in a later change.
 

@@ -1,6 +1,7 @@
 node_modules/
 .opencode/
-CONTEXT.md
+/CONTEXT.md
+/gemini.pdf
 dist/*.map
 coverage/
 *.log

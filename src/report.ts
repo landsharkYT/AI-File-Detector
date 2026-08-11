@@ -22,12 +22,13 @@ export function textReport(report: Report, fixes?: FixResult): string {
 
 export function errorReport(code: string, message: string, source: Report["policy"]["source"] = "defaults"): Report {
   return {
-    schemaVersion: 1,
+    schemaVersion: 2,
     result: "error",
     exitCode: 2,
     policy: { source, path: ".ai-artifact-policy.json", version: 1 },
     summary: { total: 0, tracked: 0, unignored: 0, unprotectedDirectories: 0 },
     findings: [],
+    exemptions: [],
     errors: [{ code, message }]
   };
 }

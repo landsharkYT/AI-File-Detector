@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { RULE_IDS } from "./rules.js";
 import { asciiLower } from "./paths.js";
-import type { Policy, PolicySource } from "./types.js";
+import type { EffectiveExemption, Policy, PolicySource } from "./types.js";
 
 export class PolicyError extends Error {
   readonly code = "INVALID_POLICY";
@@ -33,17 +33,24 @@ function stringArray(value: unknown, context: string): string[] {
   return value;
 }
 
+function nonEmptyString(value: unknown, context: string): string {
+  if (typeof value !== "string" || value.trim() === "") throw new PolicyError(`${context} must be a non-empty string`);
+  return value;
+}
+
 function validatePath(value: string): string {
   if (
     value === "" ||
     value.startsWith("/") ||
     value.includes("\\") ||
+    value.includes("*") ||
+    value.includes("?") ||
     value.endsWith("/") ||
     value.split("/").some((segment) => segment === "" || segment === "." || segment === "..")
   ) {
     throw new PolicyError(`Invalid repository-relative exemption path ${JSON.stringify(value)}`);
   }
-  return asciiLower(value);
+  return value;
 }
 
 function unique(values: readonly string[], context: string): void {
@@ -56,7 +63,7 @@ function unique(values: readonly string[], context: string): void {
 }
 
 export function parsePolicy(content: string | null, source: PolicySource): Policy {
-  if (content === null) return { source, exemptRules: new Set(), exemptPaths: new Set() };
+  if (content === null) return { source, version: 1, exemptRules: new Set(), exemptPaths: new Set(), exemptions: [] };
   let parsed: unknown;
   try {
     parsed = JSON.parse(content);
@@ -65,14 +72,54 @@ export function parsePolicy(content: string | null, source: PolicySource): Polic
   }
   if (!isRecord(parsed)) throw new PolicyError(`${POLICY_PATH} must contain a JSON object`);
   exactKeys(parsed, ["version", "exempt"], POLICY_PATH);
-  if (parsed.version !== 1) throw new PolicyError(`${POLICY_PATH} must declare "version": 1`);
+  if (parsed.version !== 1 && parsed.version !== 2) throw new PolicyError(`${POLICY_PATH} must declare "version": 1 or 2`);
 
   const exempt = parsed.exempt;
   if (exempt !== undefined && !isRecord(exempt)) throw new PolicyError("exempt must be an object");
   const exemptionObject = exempt ?? {};
   exactKeys(exemptionObject, ["rules", "paths"], "exempt");
-  const rules = stringArray(exemptionObject.rules, "exempt.rules");
-  const paths = stringArray(exemptionObject.paths, "exempt.paths");
+  const version = parsed.version;
+  const exemptions: EffectiveExemption[] = [];
+  let rules: string[];
+  let paths: string[];
+  if (version === 1) {
+    rules = stringArray(exemptionObject.rules, "exempt.rules");
+    paths = stringArray(exemptionObject.paths, "exempt.paths");
+    exemptions.push(
+      ...rules.map((ruleId): EffectiveExemption => ({ scope: "rule", ruleId, reason: null, authority: null, provenance: "legacy-unattributed" })),
+      ...paths.map((path): EffectiveExemption => ({ scope: "path", path: validatePath(path), reason: null, authority: null, provenance: "legacy-unattributed" }))
+    );
+  } else {
+    const rawRules = exemptionObject.rules ?? [];
+    const rawPaths = exemptionObject.paths ?? [];
+    if (!Array.isArray(rawRules) || !Array.isArray(rawPaths)) throw new PolicyError("schema 2 exempt.rules and exempt.paths must be arrays");
+    rules = rawRules.map((entry, index) => {
+      if (!isRecord(entry)) throw new PolicyError(`exempt.rules[${index}] must be an object`);
+      exactKeys(entry, ["ruleId", "reason", "authority"], `exempt.rules[${index}]`);
+      const ruleId = nonEmptyString(entry.ruleId, `exempt.rules[${index}].ruleId`);
+      exemptions.push({
+        scope: "rule",
+        ruleId,
+        reason: nonEmptyString(entry.reason, `exempt.rules[${index}].reason`),
+        authority: nonEmptyString(entry.authority, `exempt.rules[${index}].authority`),
+        provenance: "policy-approved"
+      });
+      return ruleId;
+    });
+    paths = rawPaths.map((entry, index) => {
+      if (!isRecord(entry)) throw new PolicyError(`exempt.paths[${index}] must be an object`);
+      exactKeys(entry, ["path", "reason", "authority"], `exempt.paths[${index}]`);
+      const path = validatePath(nonEmptyString(entry.path, `exempt.paths[${index}].path`));
+      exemptions.push({
+        scope: "path",
+        path,
+        reason: nonEmptyString(entry.reason, `exempt.paths[${index}].reason`),
+        authority: nonEmptyString(entry.authority, `exempt.paths[${index}].authority`),
+        provenance: "policy-approved"
+      });
+      return path;
+    });
+  }
   unique(rules, "exempt.rules");
   unique(paths, "exempt.paths");
 
@@ -81,8 +128,10 @@ export function parsePolicy(content: string | null, source: PolicySource): Polic
   }
   return {
     source,
+    version,
     exemptRules: new Set(rules),
-    exemptPaths: new Set(paths.map(validatePath))
+    exemptPaths: new Set(paths.map((path) => asciiLower(validatePath(path)))),
+    exemptions
   };
 }
 

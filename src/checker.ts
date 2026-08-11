@@ -139,10 +139,10 @@ export async function checkRepository(options: CheckOptions): Promise<Report> {
   const unignoredCount = findings.filter(({ type }) => type === "unignored").length;
   const unprotectedDirectories = findings.filter(({ type }) => type === "unprotected-directory").length;
   return {
-    schemaVersion: 1,
+    schemaVersion: 2,
     result: findings.length === 0 ? "compliant" : "violations",
     exitCode: findings.length === 0 ? 0 : 1,
-    policy: { source: policy.source, path: ".ai-artifact-policy.json", version: 1 },
+    policy: { source: policy.source, path: ".ai-artifact-policy.json", version: policy.version },
     summary: {
       total: findings.length,
       tracked: trackedCount,
@@ -150,6 +150,7 @@ export async function checkRepository(options: CheckOptions): Promise<Report> {
       unprotectedDirectories
     },
     findings,
+    exemptions: policy.exemptions,
     errors: []
   };
 }

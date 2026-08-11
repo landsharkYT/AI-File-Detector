@@ -31,7 +31,7 @@ It must be usable in two environments:
 
 ## Source Material
 
-The initial concept in `gemini.pdf` proposes a Bash checker for paths such as `.claude`, `CLAUDE.md`, `.agents`, `AGENTS.md`, `.opencode`, `.cursor`, `.codex`, `.mcp.json`, and generated ADR directories. It also proposes packaging the policy both as an agent skill and as a GitHub Action.
+The private initial design brief proposed a Bash checker for paths such as `.claude`, `CLAUDE.md`, `.agents`, `AGENTS.md`, `.opencode`, `.cursor`, `.codex`, `.mcp.json`, and generated ADR directories. Maintained requirements, tests, and decision records now define the product. The brief also proposed packaging the policy both as an agent skill and as a GitHub Action.
 
 The PDF implementation is a starting point, not an accepted specification. In particular, GitHub cannot inspect local files that were ignored and never committed, so local and GitHub enforcement have different observable inputs.
 
@@ -149,13 +149,13 @@ Fully ignored, untracked artifacts do not produce violations. Directory rules re
 
 ```json
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "result": "violations",
   "exitCode": 1,
   "policy": {
     "source": "base-branch",
     "path": ".ai-artifact-policy.json",
-    "version": 1
+    "version": 2
   },
   "summary": {
     "total": 1,
@@ -175,13 +175,22 @@ Fully ignored, untracked artifacts do not produce violations. Directory rules re
       "remediation": "untrack-and-ignore"
     }
   ],
+  "exemptions": [
+    {
+      "scope": "rule",
+      "ruleId": "grill.adrs",
+      "reason": "Decision records are intentionally published project documentation.",
+      "authority": "repository-owner:landsharkYT",
+      "provenance": "policy-approved"
+    }
+  ],
   "errors": []
 }
 ```
 
 Paths use repository-relative `/` separators. Findings are sorted by path and then rule ID. Output contains no timestamps or machine-specific absolute paths. Enumerated fields carry machine meaning; human prose, when present, is supplementary. A breaking change requires a new `schemaVersion`.
 
-Schema V1 uses these enumerations:
+Schema V2 uses these enumerations:
 
 - `result`: `compliant`, `violations`, or `error`;
 - `policy.source`: `defaults`, `working-tree`, or `base-branch`;
@@ -189,6 +198,8 @@ Schema V1 uses these enumerations:
 - `remediation`: `untrack-and-ignore`, `add-ignore`, `protect-directory`, or `manual`.
 
 `ignoreRule` is either `null` or an object containing the repository-relative ignore-file path, line number, and matched pattern reported by Git. Configuration and execution errors use stable codes in `errors`; prose messages are supplementary.
+
+Every effective policy exemption appears in `exemptions`. Schema-2 approvals carry their exact scope, reason, stable authority identifier, and `policy-approved` provenance. Accepted schema-1 exemptions carry null reason and authority with `legacy-unattributed` provenance. The canonical contract is `schemas/report-v2.schema.json`.
 
 ## Default Protected Artifacts
 
@@ -270,21 +281,29 @@ A repository may exempt individual default protections in a tracked `.ai-artifac
 
 ```json
 {
-  "version": 1,
+  "version": 2,
   "exempt": {
-    "rules": ["grill.adrs"],
-    "paths": ["AGENTS.md"]
+    "rules": [{
+      "ruleId": "grill.adrs",
+      "reason": "Decision records are intentionally published project documentation.",
+      "authority": "repository-owner:landsharkYT"
+    }],
+    "paths": [{
+      "path": "AGENTS.md",
+      "reason": "This repository intentionally publishes its contributor instructions.",
+      "authority": "repository-owner:landsharkYT"
+    }]
   }
 }
 ```
 
-A rule exemption disables one default protection throughout the repository. A path exemption permits one exact repository-relative path while leaving the rule active elsewhere. Path exemptions use the same ASCII case-insensitive comparison as protection rules. V1 does not support exemption globs.
+A rule exemption disables one named default protection throughout the repository. A path exemption permits one exact repository-relative path while leaving the rule active elsewhere. Each schema-2 exemption requires a non-empty reason and authority. Path exemptions use the same ASCII case-insensitive comparison as protection rules. Wildcards and directory-prefix exemptions are not supported.
 
 An exemption declares that the matching artifact may be tracked intentionally. It must be explicit and reviewable in repository history.
 
 The policy file is optional. If absent, every default protection applies. If present, it is validated strictly and fails closed with exit code `2` when it contains malformed JSON, an unsupported or missing `version`, unknown properties, unknown rule IDs, duplicate exemptions, absolute exemption paths, `..` traversal, or non-`/` path separators.
 
-V1 accepts only `"version": 1`. Exact path exemptions are repository-relative and may name paths that do not exist yet, allowing an exemption to be merged before a later pull request relies on it.
+Schema 2 is the current policy. Schema 1 remains accepted so existing repositories do not fail abruptly, but its string-only exemptions are reported as legacy and unattributed. Exact path exemptions are repository-relative and may name paths that do not exist yet, allowing an exemption to be merged before a later pull request relies on it.
 
 For pull-request checks, the target branch's policy file governs the proposed tree. Changes to `.ai-artifact-policy.json` in the pull request do not affect that same check. A new exemption must be reviewed and merged before a later pull request can rely on it. Outside a pull-request context, the checker uses the policy file in the checked-out repository.
 

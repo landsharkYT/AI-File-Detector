@@ -1,6 +1,6 @@
 {
   "name": "ai-file-detector",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Keep local AI-agent artifacts out of Git history.",
   "type": "module",
   "bin": {
@@ -8,6 +8,7 @@
   },
   "files": [
     "dist/ai-file-detector.js",
+    "schemas/report-v2.schema.json",
     "action.yml",
     "skills/ai-file-detector/SKILL.md",
     "skills/ai-file-detector/README.md",

@@ -1,8 +1,19 @@
 {
-  "version": 1,
+  "version": 2,
   "exempt": {
+    "rules": [
+      {
+        "ruleId": "grill.adrs",
+        "reason": "Decision records are intentionally published project documentation.",
+        "authority": "repository-owner:landsharkYT"
+      }
+    ],
     "paths": [
-      "skills/ai-file-detector/SKILL.md"
+      {
+        "path": "skills/ai-file-detector/SKILL.md",
+        "reason": "This is the published agent integration for AIFileDetector.",
+        "authority": "repository-owner:landsharkYT"
+      }
     ]
   }
 }

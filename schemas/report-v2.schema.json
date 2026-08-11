@@ -61,7 +61,12 @@
               "reason": { "type": ["string", "null"] },
               "authority": { "type": ["string", "null"] },
               "provenance": { "enum": ["legacy-unattributed", "policy-approved"] }
-            }
+            },
+            "allOf": [{
+              "if": { "properties": { "provenance": { "const": "policy-approved" } } },
+              "then": { "properties": { "reason": { "type": "string", "minLength": 1 }, "authority": { "type": "string", "minLength": 1 } } },
+              "else": { "properties": { "reason": { "type": "null" }, "authority": { "type": "null" } } }
+            }]
           },
           {
             "type": "object",
@@ -73,7 +78,12 @@
               "reason": { "type": ["string", "null"] },
               "authority": { "type": ["string", "null"] },
               "provenance": { "enum": ["legacy-unattributed", "policy-approved"] }
-            }
+            },
+            "allOf": [{
+              "if": { "properties": { "provenance": { "const": "policy-approved" } } },
+              "then": { "properties": { "reason": { "type": "string", "minLength": 1 }, "authority": { "type": "string", "minLength": 1 } } },
+              "else": { "properties": { "reason": { "type": "null" }, "authority": { "type": "null" } } }
+            }]
           }
         ]
       }
